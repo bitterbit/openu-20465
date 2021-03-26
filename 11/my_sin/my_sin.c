@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 double absolute(double n) {
     if (n >= 0) {
@@ -6,6 +7,8 @@ double absolute(double n) {
     }
     return -n;
 }
+
+#define SIN_PRECISION 0.000001
 
 double my_sin(double x) {
     double item; /* stores the value of a single iteration
@@ -26,21 +29,19 @@ double my_sin(double x) {
         factorial *= (i*2) * (i*2+1);
         power *= x*x;
         sign *= -1;
-    } while(absolute(item) >  0.000001);
+    } while(absolute(item) >= SIN_PRECISION);
 
     return result;
 }
 
 int main() {
     double number;
-    double result;
 
-    printf("What number?\n");
+    printf("Hello, please enter a radian between -25 to 25\n");
     scanf("%lf", &number);
     printf("calculating sin(%f)\n", number);
 
-    result = my_sin(number);
-
-    printf("number %f\n", result);
+    printf("my_sin(%lf) = %f\n",  number, my_sin(number));
+    printf("sin(%lf) = %f\n", number, sin(number));
     return 0;
 }
