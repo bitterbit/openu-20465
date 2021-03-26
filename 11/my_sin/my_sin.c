@@ -1,19 +1,17 @@
 #include <stdio.h>
 
-
 double absolute(double n) {
     if (n >= 0) {
         return n;
     }
-
     return -n;
 }
 
-
 double my_sin(double x) {
-
-    double item;
-    double result = 0;
+    double item; /* stores the value of a single iteration
+                    when is smaller than precision we stop and return 
+                    the final value */
+    double result = 0; 
     int i=0;
     
     double factorial = 1;
@@ -21,10 +19,9 @@ double my_sin(double x) {
     int sign = 1;
 
     do {
-        item = power / factorial;
-        item = item * sign;
-
+        item = sign * (power / factorial);
         result += item;
+
         i++;
         factorial *= (i*2) * (i*2+1);
         power *= x*x;
