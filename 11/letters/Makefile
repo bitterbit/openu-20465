@@ -1,6 +1,7 @@
+CFLAGS=-Wall -ansi -pedantic
 
 a.out:
-	${CC} letters.c
+	${CC} ${CFLAGS} letters.c
 
 clean:
 	rm -f a.out
