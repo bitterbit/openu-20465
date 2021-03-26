@@ -1,0 +1,5 @@
+$ echo "-12" | ./a.out
+Hello, please enter a radian between -25 to 25
+calculating sin(-12.000000)
+my_sin(-12.000000) = 0.536573
+sin(-12.000000) = 0.536573

@@ -1,4 +1,4 @@
-CFLAGS=-Wall -ansi -pedantic -g -gdwarf
+CFLAGS=-Wall -ansi -pedantic -lm
 
 a.out:
 	${CC} ${CFLAGS} my_sin.c
