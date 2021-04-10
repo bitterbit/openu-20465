@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #ifndef H_TEXT
 #define H_TEXT
 
@@ -7,5 +9,7 @@ struct TextImpl {
 };
 
 typedef struct TextImpl TextImpl;
+
+size_t readStdin(char* buf, size_t max);
 
 #endif

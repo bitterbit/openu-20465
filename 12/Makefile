@@ -1,6 +1,6 @@
 CFLAGS=-Wall -ansi -pedantic
 
-CFILES=textLinkedList.c textRealloc.c myText.c
+CFILES=textLinkedList.c textRealloc.c myText.c text.c
 OBJS:=$(CFILES:%.c=%.o)
 
 a.out:$(OBJS)
