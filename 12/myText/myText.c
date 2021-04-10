@@ -51,7 +51,7 @@ int main() {
 
     res = textBackend->readText();
     if (res == ERR_MEM) {
-        printf("Error while allocating memory\n");
+        printf(">> Error while allocating memory\n");
         return res;
     }
 
