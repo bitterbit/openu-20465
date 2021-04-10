@@ -78,5 +78,6 @@ int main() {
             putchar(c);
         }
     } while(c != EOF);
-}
 
+    return 0;
+}

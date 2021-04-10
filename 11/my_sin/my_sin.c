@@ -41,7 +41,7 @@ int main() {
     scanf("%lf", &number);
     printf("calculating sin(%f)\n", number);
 
-    printf("my_sin(%lf) = %f\n",  number, my_sin(number));
-    printf("sin(%lf) = %f\n", number, sin(number));
+    printf("my_sin(%f) = %f\n",  number, my_sin(number));
+    printf("sin(%f) = %f\n", number, sin(number));
     return 0;
 }
