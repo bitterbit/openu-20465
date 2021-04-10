@@ -6,9 +6,6 @@
 char* singleBuffer = NULL;
 size_t chunks = 0;
 
-#define CHUNK_SIZE 60
-#define LINE_WIDTH "60"
-
 int reallocReadText() {
     size_t actualSize;
 
@@ -23,15 +20,13 @@ int reallocReadText() {
     }
 
     if (singleBuffer == NULL) {
-        printf("Error: memory allocation failed\n");
-        return -1;
+        return ERR_MEM; 
     }
 
-    printf("realloc read %lu chunks\n", chunks);
     return 0;
 }
 
-int reallocPrintText() {
+void reallocPrintText() {
     size_t i;
     for(i=0; i<chunks; i++) {
         char *c = singleBuffer + (i * CHUNK_SIZE);
@@ -39,5 +34,4 @@ int reallocPrintText() {
     }
 
     free(singleBuffer);
-    return 0;
 }

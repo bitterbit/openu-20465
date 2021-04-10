@@ -4,7 +4,7 @@
 #define H_TEXT_LINKED_LIST
 
 int linkedListReadText();
-int linkedListPrintText();
+void linkedListPrintText();
 
 TextImpl TextLinkedListImpl = {
     .readText = linkedListReadText,

@@ -16,6 +16,7 @@ int promtBackendSelection() {
         printf(">> Error while reading selection\n");
         return -1;
     }
+    printf("You Chose %c\n", choice);
 
     switch(choice) {
         case '1':
@@ -33,7 +34,6 @@ int promtBackendSelection() {
 int main() {
     int res;
     TextImpl *textBackend;
-    printf("Hello World\n");
 
     do {
         res = promtBackendSelection();
@@ -47,6 +47,13 @@ int main() {
         return -1;
     }
 
-    textBackend->readText();
+    printf("Please enter some text:\n");
+
+    res = textBackend->readText();
+    if (res == ERR_MEM) {
+        printf("Error while allocating memory\n");
+        return res;
+    }
+
     textBackend->printText();
 }

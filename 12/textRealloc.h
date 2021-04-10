@@ -4,7 +4,7 @@
 #define H_TEXT_REALLOC
 
 int reallocReadText();
-int reallocPrintText();
+void reallocPrintText();
 
 TextImpl TextReallocImpl = {
     .readText = reallocReadText,

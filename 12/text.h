@@ -3,9 +3,14 @@
 #ifndef H_TEXT
 #define H_TEXT
 
+#define CHUNK_SIZE 60
+#define LINE_WIDTH "60"
+
+#define ERR_MEM -1
+
 struct TextImpl {
     int (*readText)();
-    int (*printText)();
+    void (*printText)();
 };
 
 typedef struct TextImpl TextImpl;
