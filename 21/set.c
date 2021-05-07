@@ -17,7 +17,7 @@ void reset_set(Set *set) {
 }
 
 void debug_set(Set *set) {
-    printf("set %u %u %u %u\n", set->a, set->b, set->c, set->d);
+    /* printf("set %p %u %u %u %u\n", set, set->a, set->b, set->c, set->d); */
 }
 
 void put_set(Set *set, uint8_t i) {
@@ -46,6 +46,8 @@ void print_set_item(int val, bool *first_item) {
 }
 
 void print_set(Set *set) {
+    debug_set(set);
+
     int i;
     bool first_item = true;
 
@@ -78,12 +80,20 @@ void print_set(Set *set) {
     }
 }
 
+#define UNION_SET(x) set_c->x = set_a->x | set_b->x
 void union_set(Set *set_a, Set *set_b, Set *set_c) {
-    printf("union_set\n");
+    UNION_SET(a);
+    UNION_SET(b);
+    UNION_SET(c);
+    UNION_SET(d);
 }
 
+#define INTERSECT_SET(x) set_c->x = set_a->x & set_b->x
 void intersect_set(Set *set_a, Set *set_b, Set *set_c) {
-    printf("intersect_set\n");
+    INTERSECT_SET(a);
+    INTERSECT_SET(b);
+    INTERSECT_SET(c);
+    INTERSECT_SET(d);
 }
 
 void sub_set(Set *set_a, Set *set_b, Set *set_c) {

@@ -18,23 +18,25 @@ Set* getSet(char* set_name) {
         return NULL;
     }
 
+    /* printf("getset(%s);\n", set_name); */
+
     if (strcmp(set_name, "SETA") == 0) {
         return &SETA;
     }
     if (strcmp(set_name, "SETB") == 0) {
-        return &SETA;
+        return &SETB;
     }
     if (strcmp(set_name, "SETC") == 0) {
-        return &SETA;
+        return &SETC;
     }
     if (strcmp(set_name, "SETD") == 0) {
-        return &SETA;
+        return &SETD;
     }
     if (strcmp(set_name, "SETE") == 0) {
-        return &SETA;
+        return &SETE;
     }
     if (strcmp(set_name, "SETF") == 0) {
-        return &SETA;
+        return &SETF;
     }
 
     return NULL;
@@ -95,9 +97,9 @@ bool handleLine(char *line) {
         return true;
     }
 
-    if ( strcmp(cmd, "union_set") |
-         strcmp(cmd, "intersect_set") |
-         strcmp(cmd, "sub_set") |
+    if ( strcmp(cmd, "union_set") & 
+         strcmp(cmd, "intersect_set") & 
+         strcmp(cmd, "sub_set") & 
          strcmp(cmd, "symdiff_set") == 0) {
         printf("Invalid Command\n");
         return false;
@@ -112,11 +114,16 @@ bool handleLine(char *line) {
     }
 
     char *set_c_name = strtok(NULL, cmd_delim);
-    Set *set_c = getSet(set_b_name);
+    Set *set_c = getSet(set_c_name);
+
     if (set_c_name == NULL || set_c == NULL) {
         printf("Undefined set\n");
         return false;
     }
+
+    printf("set_a=%s ", set_name);
+    printf("set_b=%s ", set_b_name);
+    printf("set_c=%s\n", set_c_name);
 
     if (strcmp(cmd, "union_set") == 0) {
         union_set(set, set_b, set_c);
@@ -156,7 +163,7 @@ int main(int argc, char **argv) {
     bool should_continue = true;
     while ((read = getline(&line, &len, stdin)) != -1 && should_continue) {
         line[read - 1] = '\0'; /* Null terminate instead of newline */
-        printf("%s\n", line);
+        printf(">> %s\n", line);
         should_continue = handleLine(line);
     }
 

@@ -1,3 +1,5 @@
 read_set SETA 1,2,65,33,120,2,-1
 print_set SETA
+read_set SETB 1,2,65,33,120,2,-1
+print_set SETB
 stop
