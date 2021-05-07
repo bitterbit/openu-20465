@@ -1,0 +1,3 @@
+read_set SETA 1,2,65,33,120,2,-1
+print_set SETA
+stop
