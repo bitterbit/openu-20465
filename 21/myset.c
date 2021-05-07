@@ -121,10 +121,6 @@ bool handleLine(char *line) {
         return false;
     }
 
-    printf("set_a=%s ", set_name);
-    printf("set_b=%s ", set_b_name);
-    printf("set_c=%s\n", set_c_name);
-
     if (strcmp(cmd, "union_set") == 0) {
         union_set(set, set_b, set_c);
         return true;

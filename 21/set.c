@@ -96,10 +96,26 @@ void intersect_set(Set *set_a, Set *set_b, Set *set_c) {
     INTERSECT_SET(d);
 }
 
+#define A_AND_NOT_B(x) set_c->x = set_a->x & (~set_b->x)
 void sub_set(Set *set_a, Set *set_b, Set *set_c) {
-    printf("sub_set\n");
+    /* take all items from a if not in b */
+    Set a_and_b;
+    union_set(set_a, set_b, &a_and_b);
+    A_AND_NOT_B(a);
+    A_AND_NOT_B(b);
+    A_AND_NOT_B(c);
+    A_AND_NOT_B(d);
 }
 
+#define DISABLE_IF_IN_BOTH(x) set_c->x = (set_a->x & (~set_b->x)) | (set_b->x & (~set_a->x))
+/* all items in a or b but not in both */
 void symdiff_set(Set *set_a, Set *set_b, Set *set_c) {
-    printf("symdiff_set\n");
+    Set a_and_b;
+    Set a_or_b;
+    intersect_set(set_a, set_b, &a_and_b);
+    union_set(set_a, set_b, &a_or_b);
+    DISABLE_IF_IN_BOTH(a);
+    DISABLE_IF_IN_BOTH(b);
+    DISABLE_IF_IN_BOTH(c);
+    DISABLE_IF_IN_BOTH(d);
 }
