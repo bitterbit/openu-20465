@@ -1,10 +1,12 @@
 CFLAGS=-Wall -ansi -pedantic
+LDFLAGS=-lreadline
 
 CFILES=myset.c set.c
 OBJS:=$(CFILES:%.c=%.o)
 
+
 a.out:$(OBJS)
-	${CC} $(OBJS) -o $@
+	${CC} $(OBJS) ${LDFLAGS} -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<

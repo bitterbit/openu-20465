@@ -4,6 +4,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 
 #include "set.h"
 
@@ -454,8 +457,8 @@ int handleLine(char *line) {
 
 int main(int argc, char **argv) {
     char *line = NULL;
-    size_t len = 0;
-    ssize_t read;
+    /* size_t len = 0; */
+    /* ssize_t read; */
 
     reset_set(&SETA);
     reset_set(&SETB);
@@ -465,23 +468,25 @@ int main(int argc, char **argv) {
     reset_set(&SETF);
 
     int err = OK;
-    while ((read = getline(&line, &len, stdin)) != -1) {
-        line[read - 1] = '\0'; /* Null terminate instead of newline */
+    line = readline(">> ");
+    while (line != NULL) {
         printf(">> %s\n", line);
 
         /* spec states we should continue to next cmd after error */
         err = handleLine(line);
         if (err == STOP) {
+            free(line);
             break;
         }
         if (err != OK) {
             print_err(err);
         }
+
+        free(line);
+        line = readline(">> ");
     }
 
     if (err != STOP) {
         printf("Reached end of commands without a stop command\n");
     }
-
-    free(line);
 }
