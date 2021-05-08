@@ -1,7 +1,7 @@
 CFLAGS=-Wall -ansi -pedantic
 LDFLAGS=-lreadline
 
-CFILES=myset.c set.c
+CFILES=myset.c set.c str.c
 OBJS:=$(CFILES:%.c=%.o)
 
 
