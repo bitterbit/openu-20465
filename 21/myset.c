@@ -210,14 +210,11 @@ void nullifyTrailingSpace(char* s) {
     }
 
     size_t len = strlen(s);
+    char* cursor = s + len - 1;
 
-    char* seek = s + len - 1;
-    char c = *s;
-
-    while(seek > s && isspace(c)) {
-        *seek = '\0';
-        seek--;
-        c = *seek;
+    while(cursor > s && isspace(*cursor)) {
+        *cursor = '\0';
+        cursor--;
     }
 }
 
@@ -287,7 +284,7 @@ void freeLine(CmdLine *line) {
 void debugLine(CmdLine *line) {
     printf("$ CMD: %s\n", line->cmd);
     for (size_t i=0; i<line->nb_params; i++) {
-        printf("$ param[%lu] = %s\n", i, line->params[i]);
+        printf("$ param[%lu] = '%s'\n", i, line->params[i]);
     }
 }
 int getMaxNumberOfParams(char *cmd) {
