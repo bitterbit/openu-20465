@@ -1,0 +1,31 @@
+>> read_set SETG, 3, 6, 5, 4, 4, -1
+Undefined set name
+>> read_set setA, 3, 6, 5, 4, 4, -1
+Undefined set name
+>> do_it SETA, SETB, SETC
+Undefined command name
+>> UNION_set SETA, SETB, SETC
+Undefined command name
+>> read_set SETB, 45, 567, 34, -1
+Invalid set member – value out of range
+>> read_set SETA, 45, 56, 45, 34
+List of set members is not terminated correctly
+>> read_set SETA, 45 ,-3, 2, 45, 34, -1
+Invalid set member – value out of range
+>> read_set SETA, 45, 2, xyz, 34, -1
+Invalid set member – not an integer
+>> read_set SETA, 45, 2, 24.0, 34, -1
+Invalid set member – not an integer
+>> union_set SETC, SETA
+Missing parameter
+>> union_set SETC, SETA, SETB,
+Extraneous text after end of command
+>> print_set SETC, SETD
+Extraneous text after end of command
+>> sub_set SETF, , SETD, SETA
+Multiple consecutive commas
+>> intersect_set SETF SETD SETA
+Missing comma
+>> symdiff_set, SETF, SETB, SETA
+Illegal comma
+Reached end of commands without a stop command

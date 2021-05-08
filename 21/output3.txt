@@ -1,0 +1,13 @@
+>> read_set SETA,1,2,65,-1
+>> read_set SETB,33,120,2,-1
+>> print_set SETA
+1,2,65
+>> print_set SETB
+2,33,120
+>> symdiff_set SETA,SETB,SETC
+>> sub_set SETA,SETB,SETD
+>> print_set SETC
+1,33,65,120
+>> print_set SETD
+1,65
+>> stop
