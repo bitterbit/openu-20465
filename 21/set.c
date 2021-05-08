@@ -16,10 +16,6 @@ void reset_set(Set *set) {
     set->d = 0;
 }
 
-void debug_set(Set *set) {
-    /* printf("set %p %u %u %u %u\n", set, set->a, set->b, set->c, set->d); */
-}
-
 void put_set(Set *set, uint8_t i) {
     if (i < MAX_A) {
         set->a |= (1 << i);
@@ -46,8 +42,6 @@ void print_set_item(int val, bool *first_item) {
 }
 
 void print_set(Set *set) {
-    debug_set(set);
-
     int i;
     bool first_item = true;
 

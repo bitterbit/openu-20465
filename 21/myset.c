@@ -105,8 +105,9 @@ Set* getSet(char* set_name, int *err) {
 }
 
 bool isNumber(char *s) {
+    int i;
     size_t len = strlen(s);
-    for (int i=0; i<len; i++) {
+    for (i=0; i<len; i++) {
         char c = s[i];
 
         if (isdigit(c) || c == '-' || isspace(c)) {
@@ -130,12 +131,12 @@ char* skipSpace(char *s)  {
 }
 
 int readSet(Set *set, CmdLine *line) {
-    reset_set(set);
-    char *token = NULL;
     int num = 0;
+    size_t i;
+    reset_set(set);
 
     /* make sure to skip first param as it is the name of the set */
-    for(size_t i=1; i<line->nb_params; i++) {
+    for(i=1; i<line->nb_params; i++) {
         char *token = line->params[i];
         if (isNumber(token) == false) {
             return ERR_SET_MEMBER_NOT_INT;
@@ -198,23 +199,23 @@ char* skipLeadingSpace(char* s) {
         return s;
     }
 
-    char c = *s;
-    while(c != '\0' && isspace(c)) {
+    while(*s != '\0' && isspace(*s)) {
         s++;
-        c = *s;
     }
 
     return s;
 }
 
 void nullifyTrailingSpace(char* s) {
+    size_t len;
+    char* cursor;
+
     if (isEmpty(s)) {
         return;
     }
 
-    size_t len = strlen(s);
-    char* cursor = s + len - 1;
-
+    len = strlen(s);
+    cursor = s + len - 1;
     while(cursor > s && isspace(*cursor)) {
         *cursor = '\0';
         cursor--;
@@ -235,11 +236,17 @@ CmdLine* parseLine(char *line) {
     char cmd_delim[2] = " ";
     char param_delim[2] = ",";
 
-    char* line_duplicate = strdup(line);
-    CmdLine *cmd_line = malloc(sizeof(CmdLine));
+    char* line_duplicate;
+    char* cmd;
+    char* params;
+    char* param; /* currently parsed param */
+    CmdLine *cmd_line;
 
-    char *cmd = strtok(line, cmd_delim);
-    char *params = lineSkipToParams(line_duplicate);
+    line_duplicate = strdup(line);
+    cmd_line = malloc(sizeof(CmdLine));
+
+    cmd = strtok(line, cmd_delim);
+    params = lineSkipToParams(line_duplicate);
 
     cmd_line->cmd = cmd == NULL ? NULL : strdup(cmd);
     cmd_line->params = NULL;
@@ -252,9 +259,11 @@ CmdLine* parseLine(char *line) {
     }
 
 
-    char* param = strtok(params, param_delim);
+    param = strtok(params, param_delim);
     while(param != NULL) {
-        size_t i = cmd_line->nb_params;
+        size_t i;
+        i = cmd_line->nb_params;
+
         cmd_line->nb_params += 1;
         cmd_line->params = realloc(cmd_line->params, sizeof(*cmd_line->params) * cmd_line->nb_params);
 
@@ -274,9 +283,10 @@ CmdLine* parseLine(char *line) {
 }
 
 void freeLine(CmdLine *line) {
+    size_t i;
     free(line->cmd);
     free(line->original_params_line);
-    for (size_t i=0; i<line->nb_params; i++) {
+    for (i=0; i<line->nb_params; i++) {
         free(line->params[i]);
     }
 
@@ -284,12 +294,6 @@ void freeLine(CmdLine *line) {
     line->nb_params = 0;
 }
 
-void debugLine(CmdLine *line) {
-    printf("$ CMD: %s\n", line->cmd);
-    for (size_t i=0; i<line->nb_params; i++) {
-        printf("$ param[%lu] = '%s'\n", i, line->params[i]);
-    }
-}
 int getMaxNumberOfParams(char *cmd) {
     if (strcmp(cmd, "stop") == 0) {
         return 0;
@@ -327,7 +331,11 @@ int getMinNumberOfParams(char *cmd, int *err) {
 
 #define CHECK_ERR(e) if (e != OK) { return e; }
 int checkCmdLineValid(CmdLine *cmd_line) {
-    int err = OK;
+    int err;
+    size_t i;
+    int min_nb_params, max_nb_params;
+
+    err = OK;
     if (cmd_line->cmd == NULL) {
         return ERR_UNDEF_CMD_NAME;
     }
@@ -337,14 +345,14 @@ int checkCmdLineValid(CmdLine *cmd_line) {
         return ERR_ILLEGAL_COMMA;
     }
 
-    for(size_t i=0; i<cmd_line->nb_params; i++) {
+    for(i=0; i<cmd_line->nb_params; i++) {
         if (isEmpty(cmd_line->params[i])) {
             return ERR_MULTIPLE_CONSECUTIVE_COMMAS;
         }
     }
 
-    int min_nb_params = getMinNumberOfParams(cmd_line->cmd, &err);
-    int max_nb_params = getMaxNumberOfParams(cmd_line->cmd);
+    min_nb_params = getMinNumberOfParams(cmd_line->cmd, &err);
+    max_nb_params = getMaxNumberOfParams(cmd_line->cmd);
     CHECK_ERR(err);
 
     if (cmd_line->nb_params < min_nb_params) {
@@ -364,7 +372,15 @@ int checkCmdLineValid(CmdLine *cmd_line) {
 
 #define FREE_CMD_IF_ERR(e) if (e != OK) { freeLine(cmd_line); }
 int handleLine(char *line) {
+    Set* set_a;
+    Set* set_b;
+    Set* set_c;
+    char *set_b_name = NULL;
+    char *set_c_name = NULL;
+
+    CmdLine *cmd_line = NULL;
     int err = OK;
+    size_t line_len;
 
     /* empty lines are OK by spec */
     if (isEmpty(line)) {
@@ -372,14 +388,14 @@ int handleLine(char *line) {
     }
 
     nullifyTrailingSpace(line);
-    size_t line_len = strlen(line);
+    line_len = strlen(line);
 
     /* can't be a valid line if it ends with a comma */
     if (line[line_len-1] == ',') {
         return ERR_EXTRANEOUS_TEXT_AFTER_CMD;
     }
 
-    CmdLine* cmd_line = parseLine(line);
+    cmd_line = parseLine(line);
     err = checkCmdLineValid(cmd_line);
     FREE_CMD_IF_ERR(err);
     CHECK_ERR(err);
@@ -394,18 +410,18 @@ int handleLine(char *line) {
         return ERR_MISSING_PARAM;
     }
 
-    Set *set = getSet(cmd_line->params[0], &err);
+    set_a = getSet(cmd_line->params[0], &err);
     FREE_CMD_IF_ERR(err);
     CHECK_ERR(err);
 
     if (strcmp(cmd_line->cmd, "print_set") == 0) {
-        print_set(set);
+        print_set(set_a);
         freeLine(cmd_line);
         return OK;
     }
 
     if (strcmp(cmd_line->cmd, "read_set") == 0) {
-        err = readSet(set, cmd_line);
+        err = readSet(set_a, cmd_line);
         FREE_CMD_IF_ERR(err);
         CHECK_ERR(err);
 
@@ -420,35 +436,35 @@ int handleLine(char *line) {
         return ERR_MISSING_PARAM;
     }
 
-    char *set_b_name = cmd_line->params[1];
-    char *set_c_name = cmd_line->params[2]; 
+    set_b_name = cmd_line->params[1];
+    set_c_name = cmd_line->params[2]; 
     if (set_b_name == NULL || set_c_name == NULL) {
         freeLine(cmd_line);
         return ERR_MISSING_PARAM;
     }
 
-    Set *set_b = getSet(set_b_name, &err);
+    set_b = getSet(set_b_name, &err);
     FREE_CMD_IF_ERR(err);
     CHECK_ERR(err);
 
-    Set *set_c = getSet(set_c_name, &err);
+    set_c = getSet(set_c_name, &err);
     FREE_CMD_IF_ERR(err);
     CHECK_ERR(err);
 
     if (strcmp(cmd_line->cmd, "union_set") == 0) {
-        union_set(set, set_b, set_c);
+        union_set(set_a, set_b, set_c);
     }
 
     if (strcmp(cmd_line->cmd, "intersect_set") == 0) {
-        intersect_set(set, set_b, set_c);
+        intersect_set(set_a, set_b, set_c);
     }
 
     if (strcmp(cmd_line->cmd, "sub_set") == 0) {
-        sub_set(set, set_b, set_c);
+        sub_set(set_a, set_b, set_c);
     }
 
     if (strcmp(cmd_line->cmd, "symdiff_set") == 0) {
-        symdiff_set(set, set_b, set_c);
+        symdiff_set(set_a, set_b, set_c);
     }
 
     freeLine(cmd_line);
@@ -457,8 +473,8 @@ int handleLine(char *line) {
 
 int main(int argc, char **argv) {
     char *line = NULL;
-    /* size_t len = 0; */
-    /* ssize_t read; */
+    int err;
+    err = OK;
 
     reset_set(&SETA);
     reset_set(&SETB);
@@ -467,7 +483,6 @@ int main(int argc, char **argv) {
     reset_set(&SETE);
     reset_set(&SETF);
 
-    int err = OK;
     line = readline(">> ");
     while (line != NULL) {
         printf(">> %s\n", line);
