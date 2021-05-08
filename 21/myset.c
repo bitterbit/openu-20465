@@ -394,7 +394,6 @@ int handleLine(char *line) {
 
     if (strcmp(cmd_line->cmd, "print_set") == 0) {
         print_set(set);
-        printf("\n");
         return OK;
     }
 

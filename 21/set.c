@@ -78,6 +78,12 @@ void print_set(Set *set) {
             print_set_item(i, &first_item);
         }
     }
+
+    /* We didn't find any item, this means the set is empty */
+    if (first_item) {
+        printf("The set is empty");
+    }
+    printf("\n");
 }
 
 #define UNION_SET(x) set_c->x = set_a->x | set_b->x
