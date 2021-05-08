@@ -359,6 +359,7 @@ int checkCmdLineValid(CmdLine *cmd_line) {
     return OK;
 }
 
+#define FREE_CMD_IF_ERR(e) if (e != OK) { freeLine(cmd_line); }
 int handleLine(char *line) {
     int err = OK;
 
@@ -376,48 +377,59 @@ int handleLine(char *line) {
     }
 
     CmdLine* cmd_line = parseLine(line);
-    /* debugLine(cmd_line); */
-
     err = checkCmdLineValid(cmd_line);
+    FREE_CMD_IF_ERR(err);
     CHECK_ERR(err);
 
     if (strcmp(cmd_line->cmd, "stop") == 0) {
+        freeLine(cmd_line);
         return STOP;
     }
 
     if (cmd_line->nb_params < 1) {
+        freeLine(cmd_line);
         return ERR_MISSING_PARAM;
     }
 
     Set *set = getSet(cmd_line->params[0], &err);
+    FREE_CMD_IF_ERR(err);
     CHECK_ERR(err);
 
     if (strcmp(cmd_line->cmd, "print_set") == 0) {
         print_set(set);
+        freeLine(cmd_line);
         return OK;
     }
 
     if (strcmp(cmd_line->cmd, "read_set") == 0) {
         err = readSet(set, cmd_line);
+        FREE_CMD_IF_ERR(err);
         CHECK_ERR(err);
+
+        freeLine(cmd_line);
         return OK;
     }
 
     /* All commands here have three set operands. 
      * Should have been checked before but just to make sure */
     if (cmd_line->nb_params < 3) {
+        freeLine(cmd_line);
         return ERR_MISSING_PARAM;
     }
 
     char *set_b_name = cmd_line->params[1];
     char *set_c_name = cmd_line->params[2]; 
     if (set_b_name == NULL || set_c_name == NULL) {
+        freeLine(cmd_line);
         return ERR_MISSING_PARAM;
     }
 
     Set *set_b = getSet(set_b_name, &err);
+    FREE_CMD_IF_ERR(err);
     CHECK_ERR(err);
+
     Set *set_c = getSet(set_c_name, &err);
+    FREE_CMD_IF_ERR(err);
     CHECK_ERR(err);
 
     if (strcmp(cmd_line->cmd, "union_set") == 0) {
@@ -436,6 +448,7 @@ int handleLine(char *line) {
         symdiff_set(set, set_b, set_c);
     }
 
+    freeLine(cmd_line);
     return OK;
 }
 
@@ -464,6 +477,10 @@ int main(int argc, char **argv) {
         if (err != OK) {
             print_err(err);
         }
+    }
+
+    if (err != STOP) {
+        printf("Reached end of commands without a stop command\n");
     }
 
     free(line);
