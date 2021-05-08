@@ -204,7 +204,26 @@ char* nullifyTrailingSpace(char* s) {
     return s;
 }
 
+bool isEmpty(char *s) {
+    while(*s != '\0') {
+        if (!isspace(*s)) {
+            return false;
+        }
+        s++;
+    }
 
+    return true;
+}
+
+
+/* 
+ * CMD OP_1, OP_2, OP_3,...
+ * CMD OP_1,OP_2,OP_3,...
+ * CMD OP_1, OP_2 ,OP_3,...
+ * OP can be
+ *   1) name of set
+ *   2) number
+ */
 CmdLine* parseLine(char *line) {
     char cmd_delim[2] = " ";
     char param_delim[2] = ",";
@@ -260,17 +279,14 @@ void debugLine(CmdLine *line) {
     }
 }
 
-/* 
- * CMD OP_1, OP_2, OP_3,...
- * CMD OP_1,OP_2,OP_3,...
- * CMD OP_1, OP_2 ,OP_3,...
- * OP can be
- *   1) name of set
- *   2) number
- */
 #define CHECK_ERR(e) if (e != OK) { return e; }
 int handleLine(char *line) {
     int err = OK;
+
+    if (isEmpty(line)) {
+        /* empty lines are OK by spec */
+        return OK;
+    }
 
     CmdLine* cmd_line = parseLine(line);
     /* debugLine(cmd_line); */
