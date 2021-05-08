@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdbool.h>
+#include "bool.h"
 #include "set.h"
 
 /* #define MAX_64 0xffffffffffffffff */
