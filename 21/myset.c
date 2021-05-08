@@ -14,6 +14,7 @@ Set SETD;
 Set SETE;
 Set SETF;
 
+#define STOP -1
 #define OK 0
 #define ERR_UNDEF_SET_NAME 1
 #define ERR_UNDEF_CMD_NAME 2
@@ -28,6 +29,7 @@ Set SETF;
 
 struct CmdLine {
     char* cmd;
+    char* original_params_line;
     size_t nb_params;
     char** params;
 };
@@ -40,7 +42,7 @@ void print_err(int err) {
             printf("Undefined set name\n");
             break;
         case ERR_UNDEF_CMD_NAME:
-            printf("Undefined cmd name\n");
+            printf("Undefined command name\n");
             break;
         case ERR_SET_MEMBER_OUT_OF_RANGE:
             printf("Invalid set member – value out of range\n");
@@ -52,19 +54,19 @@ void print_err(int err) {
             printf("Invalid set member – not an integer\n");
             break;
         case ERR_MISSING_PARAM:
-            printf("Missing parameter");
+            printf("Missing parameter\n");
             break;
         case ERR_EXTRANEOUS_TEXT_AFTER_CMD:
-            printf("Extraneous text after end of command");
+            printf("Extraneous text after end of command\n");
             break;
         case ERR_MULTIPLE_CONSECUTIVE_COMMAS:
-            printf("Multiple consecutive commas");
+            printf("Multiple consecutive commas\n");
             break;
         case ERR_MISSING_COMMA:
-            printf("Missing comma");
+            printf("Missing comma\n");
             break;
         case ERR_ILLEGAL_COMMA:
-            printf("Illegal comma");
+            printf("Illegal comma\n");
             break;
     }
 }
@@ -75,8 +77,6 @@ Set* getSet(char* set_name, int *err) {
         *err = ERR_UNDEF_SET_NAME;
         return NULL;
     }
-
-    /* printf("getset(%s);\n", set_name); */
 
     if (strcmp(set_name, "SETA") == 0) {
         return &SETA;
@@ -105,7 +105,10 @@ bool isNumber(char *s) {
     size_t len = strlen(s);
     for (int i=0; i<len; i++) {
         char c = s[i];
-        if (!isdigit(c) && c != '-') {
+
+        if (isdigit(c) || c == '-' || isspace(c)) {
+            continue;
+        } else {
             return false;
         }
     }
@@ -159,6 +162,20 @@ int readSet(Set *set, CmdLine *line) {
     return OK;
 }
 
+bool hasComma(char *s) {
+    return strchr(s, ',') != NULL;
+}
+
+bool isEmpty(char *s) {
+    while(*s != '\0') {
+        if (!isspace(*s)) {
+            return false;
+        }
+        s++;
+    }
+
+    return true;
+}
 
 char* lineSkipToParams(char *line) {
     line = strchr(line, ' ');
@@ -174,6 +191,10 @@ char* lineSkipToParams(char *line) {
 }
 
 char* skipLeadingSpace(char* s) {
+    if (isEmpty(s)) { 
+        return s;
+    }
+
     char c = *s;
     while(c != '\0' && isspace(c)) {
         s++;
@@ -183,37 +204,23 @@ char* skipLeadingSpace(char* s) {
     return s;
 }
 
-char* nullifyTrailingSpace(char* s) {
-    char* seek = s;
+void nullifyTrailingSpace(char* s) {
+    if (isEmpty(s)) {
+        return;
+    }
+
+    size_t len = strlen(s);
+
+    char* seek = s + len - 1;
     char c = *s;
 
-    /* skip all characters up to first space */
-    while(c != '\0' && isspace(c) == false) {
-        seek++;
+    while(seek > s && isspace(c)) {
+        *seek = '\0';
+        seek--;
         c = *seek;
     }
-
-    /* we are now pointing to a space or a null 
-     * if is space, replace with null to hint that the string ends here
-     * so trailing spaces will be ignored
-     */
-    if (isspace(c)) {
-        *seek = '\0';
-    }
-
-    return s;
 }
 
-bool isEmpty(char *s) {
-    while(*s != '\0') {
-        if (!isspace(*s)) {
-            return false;
-        }
-        s++;
-    }
-
-    return true;
-}
 
 
 /* 
@@ -237,6 +244,7 @@ CmdLine* parseLine(char *line) {
     cmd_line->cmd = cmd == NULL ? NULL : strdup(cmd);
     cmd_line->params = NULL;
     cmd_line->nb_params = 0;
+    cmd_line->original_params_line = params == NULL ? NULL : strdup(params);
 
     if (params == NULL) {
         free(line_duplicate);
@@ -267,9 +275,13 @@ CmdLine* parseLine(char *line) {
 
 void freeLine(CmdLine *line) {
     free(line->cmd);
+    free(line->original_params_line);
     for (size_t i=0; i<line->nb_params; i++) {
         free(line->params[i]);
     }
+
+    line->params = NULL;
+    line->nb_params = 0;
 }
 
 void debugLine(CmdLine *line) {
@@ -278,29 +290,105 @@ void debugLine(CmdLine *line) {
         printf("$ param[%lu] = %s\n", i, line->params[i]);
     }
 }
+int getMaxNumberOfParams(char *cmd) {
+    if (strcmp(cmd, "stop") == 0) {
+        return 0;
+    }
+
+    if (strcmp(cmd, "print_set") == 0)  {
+        return 1;
+    }
+
+    if (strcmp(cmd, "union_set") == 0 || strcmp(cmd, "intersect_set") == 0 ||
+        strcmp(cmd, "sub_set") == 0 || strcmp(cmd, "symdiff_set") == 0) {
+        return 3;
+    }
+
+    return -1;
+}
+
+int getMinNumberOfParams(char *cmd, int *err) {
+    if (strcmp(cmd, "stop") == 0) {
+        return 0;
+    }
+
+    if (strcmp(cmd, "print_set") == 0 || strcmp(cmd, "read_set") == 0)  {
+        return 1;
+    }
+
+    if (strcmp(cmd, "union_set") == 0 || strcmp(cmd, "intersect_set") == 0 ||
+        strcmp(cmd, "sub_set") == 0 || strcmp(cmd, "symdiff_set") == 0) {
+        return 3;
+    }
+
+    *err = ERR_UNDEF_CMD_NAME;
+    return -1;
+}
 
 #define CHECK_ERR(e) if (e != OK) { return e; }
+int checkCmdLineValid(CmdLine *cmd_line) {
+    int err = OK;
+    if (cmd_line->cmd == NULL) {
+        return ERR_UNDEF_CMD_NAME;
+    }
+
+    /* spec says no commas allowed in command name */
+    if (strchr(cmd_line->cmd, ',') != NULL) {
+        return ERR_ILLEGAL_COMMA;
+    }
+
+    for(size_t i=0; i<cmd_line->nb_params; i++) {
+        if (isEmpty(cmd_line->params[i])) {
+            return ERR_MULTIPLE_CONSECUTIVE_COMMAS;
+        }
+    }
+
+    int min_nb_params = getMinNumberOfParams(cmd_line->cmd, &err);
+    int max_nb_params = getMaxNumberOfParams(cmd_line->cmd);
+    CHECK_ERR(err);
+
+    if (cmd_line->nb_params < min_nb_params) {
+        if (!hasComma(cmd_line->original_params_line)) {
+            return ERR_MISSING_COMMA;
+        }
+
+        return ERR_MISSING_PARAM;
+    }
+
+    if (max_nb_params != -1 && cmd_line->nb_params > max_nb_params) {
+        return ERR_EXTRANEOUS_TEXT_AFTER_CMD;
+    }
+
+    return OK;
+}
+
 int handleLine(char *line) {
     int err = OK;
 
+    /* empty lines are OK by spec */
     if (isEmpty(line)) {
-        /* empty lines are OK by spec */
         return OK;
+    }
+
+    nullifyTrailingSpace(line);
+    size_t line_len = strlen(line);
+
+    /* can't be a valid line if it ends with a comma */
+    if (line[line_len-1] == ',') {
+        return ERR_EXTRANEOUS_TEXT_AFTER_CMD;
     }
 
     CmdLine* cmd_line = parseLine(line);
     /* debugLine(cmd_line); */
 
-    if (cmd_line->cmd == NULL) {
-        return ERR_UNDEF_CMD_NAME;
-    }
+    err = checkCmdLineValid(cmd_line);
+    CHECK_ERR(err);
 
     if (strcmp(cmd_line->cmd, "stop") == 0) {
-        /* TODO signal to caller that processing of commands should stop */
-        return OK; 
+        return STOP;
     }
 
-    if (cmd_line->nb_params <= 0) {
+    if (cmd_line->nb_params < 1) {
         return ERR_MISSING_PARAM;
     }
 
@@ -319,15 +407,8 @@ int handleLine(char *line) {
         return OK;
     }
 
-    if ( strcmp(cmd_line->cmd, "union_set") & 
-         strcmp(cmd_line->cmd, "intersect_set") & 
-         strcmp(cmd_line->cmd, "sub_set") & 
-         strcmp(cmd_line->cmd, "symdiff_set") == 0) {
-
-        return ERR_UNDEF_CMD_NAME;
-    }
-
-    /* All commands here have three set operands */
+    /* All commands here have three set operands. 
+     * Should have been checked before but just to make sure */
     if (cmd_line->nb_params < 3) {
         return ERR_MISSING_PARAM;
     }
@@ -375,14 +456,18 @@ int main(int argc, char **argv) {
     reset_set(&SETF);
 
     int err = OK;
-    while ((read = getline(&line, &len, stdin)) != -1 && err == OK) {
+    while ((read = getline(&line, &len, stdin)) != -1) {
         line[read - 1] = '\0'; /* Null terminate instead of newline */
         printf(">> %s\n", line);
-        err = handleLine(line);
-    }
 
-    if (err != OK) {
-        print_err(err);
+        /* spec states we should continue to next cmd after error */
+        err = handleLine(line);
+        if (err == STOP) {
+            break;
+        }
+        if (err != OK) {
+            print_err(err);
+        }
     }
 
     free(line);
