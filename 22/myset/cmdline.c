@@ -77,6 +77,9 @@ void freeLine(CmdLine *line) {
         free(line->params[i]);
     }
 
+    free(line->params);
     line->params = NULL;
     line->nb_params = 0;
+
+    free(line);
 }
