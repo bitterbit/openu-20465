@@ -28,4 +28,5 @@ Multiple consecutive commas
 Missing comma
 >> symdiff_set, SETF, SETB, SETA
 Illegal comma
+>> 
 Reached end of commands without a stop command

@@ -3,9 +3,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <readline/readline.h>
-#include <readline/history.h>
-
 #include "bool.h"
 #include "str.h"
 #include "set.h"
@@ -24,7 +21,7 @@
 #define ERR_MISSING_COMMA 9
 #define ERR_ILLEGAL_COMMA 10
 
-void print_err(int err) {
+void printErr(int err) {
     switch(err) {
         case ERR_UNDEF_SET_NAME:
             printf("Undefined set name\n");
@@ -310,6 +307,44 @@ int handleLine(char *line) {
     return OK;
 }
 
+#define CHUNK_SIZE 0x1000
+
+char* readLine(char* prompt)
+{
+    int count = 0;
+    char* buf;
+    char c;
+
+    printf("%s", prompt);
+    buf = malloc(CHUNK_SIZE);
+
+    c = fgetc(stdin);
+    while (c != '\n' && c != EOF) {
+        /* skip null's to avoid problems with
+           string functions such as strlen */
+        if (c == '\0') {
+            continue;
+        }
+
+        buf[count++] = c;
+
+        if (count % CHUNK_SIZE == 0) {
+            size_t chunks = count / CHUNK_SIZE;
+            buf = realloc(buf, (chunks+1) * CHUNK_SIZE);
+        }
+
+        c = fgetc(stdin);
+    }
+
+    if (c == EOF) {
+        free(buf);
+        return NULL;
+    }
+
+    buf[count] = '\0';
+    return buf;
+}
+
 int main(int argc, char **argv) {
     char *line = NULL;
     int err;
@@ -322,9 +357,9 @@ int main(int argc, char **argv) {
     reset_set(&SETE);
     reset_set(&SETF);
 
-    line = readline(">> ");
+    line = readLine(">> ");
     while (line != NULL) {
-        printf(">> %s\n", line);
+        printf("%s\n", line);
 
         /* spec states we should continue to next cmd after error */
         err = handleLine(line);
@@ -333,14 +368,16 @@ int main(int argc, char **argv) {
             break;
         }
         if (err != OK) {
-            print_err(err);
+            printErr(err);
         }
 
         free(line);
-        line = readline(">> ");
+        line = readLine(">> ");
     }
 
     if (err != STOP) {
-        printf("Reached end of commands without a stop command\n");
+        printf("\nReached end of commands without a stop command\n");
     }
+
+    return 0;
 }

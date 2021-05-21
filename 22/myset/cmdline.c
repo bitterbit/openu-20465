@@ -3,6 +3,22 @@
 #include "cmdline.h"
 #include "str.h"
 
+char* strDup(char* s) {
+    char *dup;
+    size_t len;
+
+    if (s == NULL) {
+        return NULL;
+    }
+
+    len = strlen(s);
+    dup = malloc(len+1);
+    memcpy(dup, s, len);
+    dup[len] = '\0';
+
+    return dup;
+}
+
 CmdLine* parseLine(char *line) {
     char cmd_delim[2] = " ";
     char param_delim[2] = ",";
@@ -13,16 +29,16 @@ CmdLine* parseLine(char *line) {
     char* param; /* currently parsed param */
     CmdLine *cmd_line;
 
-    line_duplicate = strdup(line);
+    line_duplicate = strDup(line);
     cmd_line = malloc(sizeof(CmdLine));
 
     cmd = strtok(line, cmd_delim);
     params = lineSkipToParams(line_duplicate);
 
-    cmd_line->cmd = cmd == NULL ? NULL : strdup(cmd);
+    cmd_line->cmd = cmd == NULL ? NULL : strDup(cmd);
     cmd_line->params = NULL;
     cmd_line->nb_params = 0;
-    cmd_line->original_params_line = params == NULL ? NULL : strdup(params);
+    cmd_line->original_params_line = params == NULL ? NULL : strDup(params);
 
     if (params == NULL) {
         free(line_duplicate);
@@ -43,7 +59,7 @@ CmdLine* parseLine(char *line) {
          * remove trailing space with nulls after duplicating to avoid affecting next strtok calls
          */
         param = skipLeadingSpace(param);
-        cmd_line->params[i] = strdup(param);
+        cmd_line->params[i] = strDup(param);
         nullifyTrailingSpace(cmd_line->params[i]);
 
         param = strtok(NULL, param_delim);
